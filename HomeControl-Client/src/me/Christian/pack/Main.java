@@ -46,7 +46,9 @@ public class Main extends Application{
 	public static String ComputerIP;
 	public static Button s, sd;
 	public static TextField entry;
-	
+	public static String ConnectToIp = "192.168.178.38";
+	public static int ConnectToPort = 9977;
+
 	public static void main(String[] args){
 		try {
 			lComputerIP = InetAddress.getLocalHost();
@@ -62,13 +64,13 @@ public class Main extends Application{
 
 		launch(args);
 	}
-	
+
 	public void start(Stage primaryStage) {
 		primaryStage.setTitle("Homecontrol");
 		primaryStage.setResizable(false);
 		System.out.println("Loading: Done");
 		Pane root = new Pane();
-		
+
 
 		GridPane grid = new GridPane();
 		grid.setPadding(new Insets(10, 10, 10, 10));
@@ -86,42 +88,63 @@ public class Main extends Application{
 		params.setPromptText("Enter the Params");
 		GridPane.setConstraints(params, 0, 1);
 		grid.getChildren().add(params);
+
+		final TextField ip = new TextField();
+		ip.setPromptText("Enter the Server IP");
+		ip.setText(ConnectToIp);
+		GridPane.setConstraints(ip, 0, 2);
+		grid.getChildren().add(ip);
+
+		final TextField port = new TextField();
+		port.setPromptText("Enter the Server Port");
+		port.setText(String.valueOf(ConnectToPort));
+		GridPane.setConstraints(port, 0, 3);
+		grid.getChildren().add(port);
+
 		root.getChildren().add(grid);
-		
+
 		s = new Button("Send");
 		s.setLayoutX(170);
 		s.setLayoutY(20);
 		root.getChildren().add(s);
 		s.setOnAction(new EventHandler<ActionEvent>() {
-		    @Override public void handle(ActionEvent e) {
-		        sd.setVisible(true);
-		        s.setVisible(false);
-		        if(cmd.getText() != "" && params.getText() != ""){
-		        	ConnectToServer("192.168.178.38", 9977, cmd.getText(), params.getText());
-		        	cmd.setText("");
-		        	params.setText("");
-		        }else{
-		        	System.out.println("Error - one line is empty!");
-		        }
-		    }
+			@Override public void handle(ActionEvent e) {
+				sd.setVisible(true);
+				s.setVisible(false);
+				try{
+					if(Integer.valueOf(port.getText()) > 0 && Integer.valueOf(port.getText()) < 65565){
+						ConnectToPort = Integer.valueOf(port.getText());
+						ConnectToIp = ip.getText();
+					}
+				}catch(Exception ex){
+					System.out.println("this ain't a port. Faggot");
+				}
+				if(cmd.getText() != "" && params.getText() != ""){
+					ConnectToServer(ConnectToIp, ConnectToPort, cmd.getText(), params.getText());
+					cmd.setText("");
+					params.setText("");
+				}else{
+					System.out.println("Error - one line is empty!");
+				}
+			}
 		});
-		
+
 		sd = new Button("reset");
 		sd.setLayoutX(170);
 		sd.setLayoutY(20);
 		root.getChildren().add(sd);
 		sd.setVisible(false);
 		sd.setOnAction(new EventHandler<ActionEvent>() {
-		    @Override public void handle(ActionEvent e) {
-		        sd.setVisible(false);
-		        s.setVisible(true);
-		        DisconnectFromServer();
-		    }
+			@Override public void handle(ActionEvent e) {
+				sd.setVisible(false);
+				s.setVisible(true);
+				DisconnectFromServer();
+			}
 		});
-		
-		
-		
-		primaryStage.setScene(new Scene(root, 230, 70));
+
+
+
+		primaryStage.setScene(new Scene(root, 230, 130));
 		primaryStage.show();
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override
