@@ -19,7 +19,7 @@ public class Client implements Runnable
 	public DataOutputStream dout;
 	public DataInputStream din;
 
-	public Client( String host, int port ) {
+	public Client( String host, int port) {
 
 		try {
 			socket = new Socket( host, port );

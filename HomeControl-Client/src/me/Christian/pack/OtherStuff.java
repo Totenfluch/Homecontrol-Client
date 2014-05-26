@@ -17,7 +17,7 @@ public class OtherStuff {
 			Desktop dt = Desktop.getDesktop();
 			URI uri = new URI(url);
 			dt.browse(uri.resolve(uri));
-
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
