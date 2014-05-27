@@ -79,7 +79,7 @@ public class Main extends Application{
 		primaryStage.setTitle("ConnectorZ");
 		primaryStage.setResizable(false);
 		Pane root = new Pane();
-
+		primaryStage.getIcons().add(new Image("icon.png"));
 
 		connected = new ImageView(new Image("connected.gif"));
 		connected.fitHeightProperty();
