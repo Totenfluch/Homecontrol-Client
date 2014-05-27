@@ -23,6 +23,11 @@ import java.net.UnknownHostException;
 
 
 
+
+
+
+
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -30,6 +35,8 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -44,12 +51,15 @@ public class Main extends Application{
 	public static Object ComputerMac;
 	public static String ComputerName;
 	public static String ComputerIP;
-	public static Button s, sd;
+	public static Button connect, disconnect, Send;
 	public static TextField entry;
+	public static ImageView connected,unconnected;
+	public static TextField ipf, portf;
 	public static String ConnectToIp = "192.168.178.38";
 	public static int ConnectToPort = 9977;
 
 	public static void main(String[] args){
+		System.out.println("Loading: Starts");
 		try {
 			lComputerIP = InetAddress.getLocalHost();
 		} catch (UnknownHostException e1) {
@@ -66,10 +76,22 @@ public class Main extends Application{
 	}
 
 	public void start(Stage primaryStage) {
-		primaryStage.setTitle("Homecontrol");
+		primaryStage.setTitle("ConnectorZ");
 		primaryStage.setResizable(false);
-		System.out.println("Loading: Done");
 		Pane root = new Pane();
+
+
+		connected = new ImageView(new Image("connected.gif"));
+		connected.fitHeightProperty();
+		connected.fitWidthProperty();
+		connected.setVisible(false);
+		root.getChildren().add(connected);
+
+		unconnected = new ImageView(new Image("unconnected.jpg"));
+		unconnected.fitHeightProperty();
+		unconnected.fitWidthProperty();
+		root.getChildren().add(unconnected);
+
 
 
 		GridPane grid = new GridPane();
@@ -89,38 +111,40 @@ public class Main extends Application{
 		GridPane.setConstraints(params, 0, 1);
 		grid.getChildren().add(params);
 
-		final TextField ip = new TextField();
-		ip.setPromptText("Enter the Server IP");
-		ip.setText(ConnectToIp);
-		GridPane.setConstraints(ip, 0, 2);
-		grid.getChildren().add(ip);
+		ipf = new TextField();
+		ipf.setPromptText("Enter the Server IP");
+		ipf.setText(ConnectToIp);
+		GridPane.setConstraints(ipf, 0, 2);
+		grid.getChildren().add(ipf);
 
-		final TextField port = new TextField();
-		port.setPromptText("Enter the Server Port");
-		port.setText(String.valueOf(ConnectToPort));
-		GridPane.setConstraints(port, 0, 3);
-		grid.getChildren().add(port);
+		portf = new TextField();
+		portf.setPromptText("Enter the Server Port");
+		portf.setText(String.valueOf(ConnectToPort));
+		GridPane.setConstraints(portf, 0, 3);
+		grid.getChildren().add(portf);
 
 		root.getChildren().add(grid);
 
-		s = new Button("Send");
-		s.setLayoutX(170);
-		s.setLayoutY(20);
-		root.getChildren().add(s);
-		s.setOnAction(new EventHandler<ActionEvent>() {
+		connect = new Button("Connect");
+		connect.setLayoutX(170);
+		connect.setLayoutY(20);
+		root.getChildren().add(connect);
+		connect.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
-				sd.setVisible(true);
-				s.setVisible(false);
+				disconnect.setVisible(true);
+				connect.setVisible(false);
 				try{
-					if(Integer.valueOf(port.getText()) > 0 && Integer.valueOf(port.getText()) < 65565){
-						ConnectToPort = Integer.valueOf(port.getText());
-						ConnectToIp = ip.getText();
+					if(Integer.valueOf(portf.getText()) > 0 && Integer.valueOf(portf.getText()) < 65565){
+						ConnectToPort = Integer.valueOf(portf.getText());
+						ConnectToIp = ipf.getText();
 					}
 				}catch(Exception ex){
 					System.out.println("this ain't a port. Faggot");
 				}
 				if(cmd.getText() != "" && params.getText() != ""){
-					ConnectToServer(ConnectToIp, ConnectToPort, cmd.getText(), params.getText());
+					String cmds = cmd.getText();
+					String paramss = params.getText();
+					ConnectToServer(ConnectToIp, ConnectToPort, cmds, paramss);
 					cmd.setText("");
 					params.setText("");
 				}else{
@@ -129,22 +153,37 @@ public class Main extends Application{
 			}
 		});
 
-		sd = new Button("reset");
-		sd.setLayoutX(170);
-		sd.setLayoutY(20);
-		root.getChildren().add(sd);
-		sd.setVisible(false);
-		sd.setOnAction(new EventHandler<ActionEvent>() {
+		disconnect = new Button("Disconnect");
+		disconnect.setLayoutX(170);
+		disconnect.setLayoutY(20);
+		root.getChildren().add(disconnect);
+		disconnect.setVisible(false);
+		disconnect.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
-				sd.setVisible(false);
-				s.setVisible(true);
+				disconnect.setVisible(false);
+				connect.setVisible(true);
 				DisconnectFromServer();
+			}
+		});
+		
+		Send = new Button("Send");
+		Send.setLayoutX(170);
+		Send.setLayoutY(80);
+		root.getChildren().add(Send);
+		Send.setDisable(true);
+		Send.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+				String cmds = cmd.getText();
+				String paramss = params.getText();
+				Client.processMessage("/" + cmds + " " + paramss);
+				cmd.setText("");
+				params.setText("");
 			}
 		});
 
 
-
-		primaryStage.setScene(new Scene(root, 230, 130));
+		System.out.println("Loading: Done");
+		primaryStage.setScene(new Scene(root, 240, 130));
 		primaryStage.show();
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override
@@ -152,9 +191,28 @@ public class Main extends Application{
 				System.exit(0);
 			}
 		});;
+		new AnimationTimer() {
+			@Override
+			public void handle(long now) {
+				update();
+			}
+		}.start();
+	}
+
+	protected void update() {
+		if(!Client.IsConnectedToServer && connection != null){
+			DisconnectFromServer();
+		}
 	}
 
 	public static void DisconnectFromServer(){
+		connected.setVisible(false);
+		unconnected.setVisible(true);
+		connect.setVisible(true);
+		disconnect.setVisible(false);
+		Send.setDisable(true);
+		ipf.setDisable(false);
+		portf.setDisable(false);
 		try {
 			connection.din.close();
 			connection.dout.close();
@@ -173,7 +231,14 @@ public class Main extends Application{
 	public static boolean ConnectToServer(String ip, int port, String command, String params){
 		try{
 			connection = new Client(ip, port);
-			Client.processMessage("/" + command + " " + Main.ActiveUser + " " + params);
+			if(!command.equals("")){
+				Client.processMessage("/" + command + " " + params);
+			}
+			unconnected.setVisible(false);
+			connected.setVisible(true);
+			Send.setDisable(false);
+			ipf.setDisable(true);
+			portf.setDisable(true);
 		}catch(Exception e){
 			e.printStackTrace();
 		}

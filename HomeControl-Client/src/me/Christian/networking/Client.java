@@ -4,13 +4,13 @@ import java.io.*;
 import java.net.*;
 
 import me.Christian.pack.Main;
+import me.Christian.pack.OtherStuff;
 
 public class Client implements Runnable
 {
-	public boolean IsConnectedToServer = false;
+	public static boolean IsConnectedToServer = false;
 	public static String LatestServerReply = "";
 	public boolean waitingforreply = false;
-	public boolean disconnected = false;
 	public boolean running = true;
 	public Thread thread = null;
 
@@ -28,10 +28,9 @@ public class Client implements Runnable
 			IsConnectedToServer = true;
 			thread = new Thread( this );
 			thread.start();
-		}catch( IOException ie ){ 		
-			System.out.println("Couldn't connect to the Master Server.");
-			System.exit(0);
-			disconnected = true;
+		}catch( IOException ie ){
+			Main.DisconnectFromServer();
+			System.out.println("Couldn't connect to the requested Server");
 		}
 
 		running = true;
@@ -59,16 +58,14 @@ public class Client implements Runnable
 						GetServerMessages.CheckServerMessages(message);
 						waitingforreply = false;
 					}catch(Exception e){
-						e.printStackTrace();
+						System.out.println(OtherStuff.TheNormalTime() + "Connection to Server Closed");
 						IsConnectedToServer = false;
-						disconnected = true;
 					}
 				}
 			}
 		}catch( Exception ie ){
 			ie.printStackTrace();
 			IsConnectedToServer = false;
-			disconnected = true;
 		} finally {
 			try{
 				if(dout != null){
