@@ -2,30 +2,8 @@ package me.Christian.pack;
 
 
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -34,7 +12,9 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
@@ -57,9 +37,10 @@ public class Main extends Application{
 	public static TextField ipf, portf;
 	public static String ConnectToIp = "192.168.178.38";
 	public static int ConnectToPort = 9977;
+	public static Label status;
 
 	public static void main(String[] args){
-		System.out.println("Loading: Starts");
+		System.out.println(OtherStuff.TheNormalTime() + " CLIENT: Loading starts");
 		try {
 			lComputerIP = InetAddress.getLocalHost();
 		} catch (UnknownHostException e1) {
@@ -92,7 +73,12 @@ public class Main extends Application{
 		unconnected.fitWidthProperty();
 		root.getChildren().add(unconnected);
 
-
+		status = new Label("");
+		status.setLayoutX(170);
+		status.setLayoutY(45);
+		status.setStyle("-fx-text-fill: #FF0000;");
+		status.setTooltip(new Tooltip("Try a different IP or check if the Sever is up"));
+		root.getChildren().add(status);
 
 		GridPane grid = new GridPane();
 		grid.setPadding(new Insets(10, 10, 10, 10));
@@ -132,23 +118,19 @@ public class Main extends Application{
 		connect.setOnAction(new EventHandler<ActionEvent>() {
 			@Override public void handle(ActionEvent e) {
 				disconnect.setVisible(true);
-				connect.setVisible(false);
 				try{
 					if(Integer.valueOf(portf.getText()) > 0 && Integer.valueOf(portf.getText()) < 65565){
 						ConnectToPort = Integer.valueOf(portf.getText());
 						ConnectToIp = ipf.getText();
 					}
+
+				String cmds = cmd.getText();
+				String paramss = params.getText();
+				ConnectToServer(ConnectToIp, ConnectToPort, cmds, paramss);
+				cmd.setText("");
+				params.setText("");
 				}catch(Exception ex){
-					System.out.println("this ain't a port. Faggot");
-				}
-				if(cmd.getText() != "" && params.getText() != ""){
-					String cmds = cmd.getText();
-					String paramss = params.getText();
-					ConnectToServer(ConnectToIp, ConnectToPort, cmds, paramss);
-					cmd.setText("");
-					params.setText("");
-				}else{
-					System.out.println("Error - one line is empty!");
+					System.out.println(OtherStuff.TheNormalTime() + " CLIENT: Invalid Port or IP");
 				}
 			}
 		});
@@ -165,7 +147,7 @@ public class Main extends Application{
 				DisconnectFromServer();
 			}
 		});
-		
+
 		Send = new Button("Send");
 		Send.setLayoutX(170);
 		Send.setLayoutY(80);
@@ -182,9 +164,8 @@ public class Main extends Application{
 		});
 
 
-		System.out.println("Loading: Done");
 		primaryStage.setScene(new Scene(root, 240, 130));
-		primaryStage.show();
+		
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override
 			public void handle(WindowEvent event) {
@@ -197,11 +178,16 @@ public class Main extends Application{
 				update();
 			}
 		}.start();
+		
+		System.out.println(OtherStuff.TheNormalTime() + " CLIENT: Loading done");
+		primaryStage.show();
 	}
 
 	protected void update() {
 		if(!Client.IsConnectedToServer && connection != null){
 			DisconnectFromServer();
+			status.setText("Failed");
+			System.out.println(OtherStuff.TheNormalTime()+" CLIENT: Lost connection / Host unreachable");
 		}
 	}
 
@@ -216,16 +202,14 @@ public class Main extends Application{
 		try {
 			connection.din.close();
 			connection.dout.close();
-			connection.socket.close();	
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		connection.socket = null;
-		connection.din = null;
-		connection.dout = null;
-		connection.thread = null;
-		connection.running = false;
-		connection = null;
+			connection.socket.close();
+		}catch (Exception e) {}
+		try{connection.socket = null;}catch(Exception e){}
+		try{connection.din = null;}catch(Exception e){}
+		try{connection.dout = null;}catch(Exception e){}
+		try{connection.thread = null;}catch(Exception e){}
+		try{connection.running = false;}catch(Exception e){}
+		try{connection = null;}catch(Exception e){}
 	}
 
 	public static boolean ConnectToServer(String ip, int port, String command, String params){
@@ -239,10 +223,11 @@ public class Main extends Application{
 			Send.setDisable(false);
 			ipf.setDisable(true);
 			portf.setDisable(true);
+			status.setText("");
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-
+		
 		return true;
 	}
 }

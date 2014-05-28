@@ -4,7 +4,6 @@ import java.io.*;
 import java.net.*;
 
 import me.Christian.pack.Main;
-import me.Christian.pack.OtherStuff;
 
 public class Client implements Runnable
 {
@@ -30,7 +29,6 @@ public class Client implements Runnable
 			thread.start();
 		}catch( IOException ie ){
 			Main.DisconnectFromServer();
-			System.out.println("Couldn't connect to the requested Server");
 		}
 
 		running = true;
@@ -58,7 +56,6 @@ public class Client implements Runnable
 						GetServerMessages.CheckServerMessages(message);
 						waitingforreply = false;
 					}catch(Exception e){
-						System.out.println(OtherStuff.TheNormalTime() + "Connection to Server Closed");
 						IsConnectedToServer = false;
 					}
 				}

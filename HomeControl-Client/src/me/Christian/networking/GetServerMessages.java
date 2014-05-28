@@ -1,5 +1,7 @@
 package me.Christian.networking;
 
+import me.Christian.pack.OtherStuff;
+
 
 public class GetServerMessages{
 	public static String newestreply = null;
@@ -9,6 +11,6 @@ public class GetServerMessages{
 		if(message.startsWith("/example")){
 
 		}
-		System.out.println(message);
+		System.out.println(OtherStuff.TheNormalTime() + " SERVER: " + message);
 	}
 }
